@@ -5,12 +5,12 @@ import 'package:echolinkz/utils/show_error_snackbar.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/auth_model.dart';
+import '../../utils/validators.dart';
 
 class LoginViewModel extends ChangeNotifier {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
 
   LoginViewModel() {
     emailController.addListener(_onFieldChanged);
@@ -33,6 +33,16 @@ class LoginViewModel extends ChangeNotifier {
   bool isLoading = false;
 
   Future login(BuildContext context) async {
+    if (!Validators.isValidEmail(emailController.text)) {
+      showErrorSnackbar(context, "Adresse e-mail invalide");
+      return;
+    }
+    if (!Validators.isValidPassword(passwordController.text)) {
+      showErrorSnackbar(context,
+          "Mot de passe faible : 8 caractères, majuscule, minuscule, chiffre, symbole");
+      return;
+    }
+
     isLoading = true;
     notifyListeners();
 
@@ -58,8 +68,8 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   bool isEnableLoginButton() {
-    return emailController.text.isNotEmpty &&
-        passwordController.text.isNotEmpty &&
-        !isLoading;
+    return Validators.isValidEmail(emailController.text) &&
+           Validators.isValidPassword(passwordController.text) &&
+           !isLoading;
   }
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/auth_model.dart';
 import '../../services/auth_service.dart';
 import '../../utils/show_error_snackbar.dart';
+import '../../utils/validators.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final emailController    = TextEditingController();
@@ -29,6 +30,15 @@ class RegisterViewModel extends ChangeNotifier {
   bool isLoading = false;
 
   Future<void> register(BuildContext context) async {
+    if (!Validators.isValidEmail(emailController.text)) {
+      showErrorSnackbar(context, "Adresse e-mail invalide");
+      return;
+    }
+    if (!Validators.isValidPassword(passwordController.text)) {
+      showErrorSnackbar(context,
+          "Mot de passe faible : 8 caractères, majuscule, minuscule, chiffre, symbole");
+      return;
+    }
     if (passwordController.text != confirmController.text) {
       showErrorSnackbar(context, "Les mots de passe ne correspondent pas");
       return;
@@ -57,8 +67,9 @@ class RegisterViewModel extends ChangeNotifier {
   }
 
   bool isEnableRegisterButton() =>
-      emailController.text.isNotEmpty &&
-      passwordController.text.isNotEmpty &&
+      Validators.isValidEmail(emailController.text) &&
+      Validators.isValidPassword(passwordController.text) &&
+      confirmController.text == passwordController.text &&
       confirmController.text.isNotEmpty &&
       !isLoading;
 }
