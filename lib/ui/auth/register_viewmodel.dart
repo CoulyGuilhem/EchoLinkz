@@ -8,11 +8,13 @@ import '../../utils/validators.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final emailController    = TextEditingController();
+  final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController  = TextEditingController();
 
   RegisterViewModel() {
     emailController.addListener(_onFieldChanged);
+    usernameController.addListener(_onFieldChanged);
     passwordController.addListener(_onFieldChanged);
     confirmController.addListener(_onFieldChanged);
   }
@@ -22,6 +24,7 @@ class RegisterViewModel extends ChangeNotifier {
   @override
   void dispose() {
     emailController.dispose();
+    usernameController.dispose();
     passwordController.dispose();
     confirmController.dispose();
     super.dispose();
@@ -49,7 +52,7 @@ class RegisterViewModel extends ChangeNotifier {
 
     try {
       Response response = await AuthService()
-          .register(emailController.text, passwordController.text);
+          .register(emailController.text, usernameController.text, passwordController.text);
 
       if (response.statusCode == 201) {
         if (context.mounted) {
@@ -69,6 +72,7 @@ class RegisterViewModel extends ChangeNotifier {
   bool isEnableRegisterButton() =>
       Validators.isValidEmail(emailController.text) &&
       Validators.isValidPassword(passwordController.text) &&
+      usernameController.text.trim().isNotEmpty &&
       confirmController.text == passwordController.text &&
       confirmController.text.isNotEmpty &&
       !isLoading;

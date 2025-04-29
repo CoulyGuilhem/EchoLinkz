@@ -1,73 +1,58 @@
 import 'dart:convert';
-
-// import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:echolinkz/utils/shared_prefs_manager.dart';
 
 class AuthService {
+  final String _apiBase = "http://localhost:5001/api/auth";
+
   Future<Response> login(String email, String password) async {
-    //TODO: Uncomment this code when api is ready
+    final uri = Uri.parse('$_apiBase/signin');
 
-    // String api = "http://localhost:3000";
-    // Uri apiUrl = Uri.parse('$api/login');
-
-    // final response = await http.post(
-    //   apiUrl,
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: jsonEncode({
-    //     'email': email,
-    //     'password': password,
-    //   }),
-    // );
-
-    final response = Response('''{
-  "session_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWYzZjQwZjQwZjQwZjQwZjQwZjQwZjQwIiwic2Vzc2lvbl90b2tlbiI6IjE2Mjg4NzYwNzIwNzIiLCJpYXQiOjE2Mjg4NzYwNzJ9.1",
-  "user_id": "5f3f40f40f40f40f40f40f40"
-}''', 200);
-
-    final responseData = json.decode(response.body);
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
 
     if (response.statusCode == 200) {
-      final String sessionToken = responseData['session_token'];
-      final String userId = responseData['user_id'];
-      await SharedPreferencesManager.loginUser(userId, sessionToken);
+      final data = json.decode(response.body);
+      final String token  = data['token'];
+      final String userId = data['user']['id'];
+
+      await SharedPreferencesManager.loginUser(userId, token);
+    } else if (response.statusCode == 401) {
+      throw "Email ou mot de passe incorrect";
     } else {
-      if (response.statusCode == 401) {
-        throw "Email ou mot de passe incorrect";
-      }
+      throw "Erreur de connexion (${response.statusCode})";
     }
 
     return response;
   }
 
-  Future<Response> register(String email, String password) async {
-    // TODO: Uncomment this code when api is ready
-    //
-    // final api  = "http://localhost:3000";
-    // final url  = Uri.parse('$api/register');
-    // final res  = await http.post(
-    //   url,
-    //   headers: {'Content-Type': 'application/json'},
-    //   body: jsonEncode({'email': email, 'password': password}),
-    // );
+  Future<Response> register(
+      String email, String username, String password) async {
+    final uri = Uri.parse('$_apiBase/signup');
 
-    final res = Response('''{
-    "session_token": "dummy.jwt.token",
-    "user_id": "new_user_id"
-  }''', 201);
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(
+          {'email': email, 'username': username, 'password': password}),
+    );
 
-    if (res.statusCode == 201) {
-      final data = json.decode(res.body);
-      await SharedPreferencesManager.loginUser(
-        data['user_id'],
-        data['session_token'],
-      );
-    } else if (res.statusCode == 409) {
-      throw "Un utilisateur existe déjà avec cette adresse email";
+    if (response.statusCode == 201) {
+      final data = json.decode(response.body);
+      final String token  = data['token'];
+      final String userId = data['user']['id'];
+
+      await SharedPreferencesManager.loginUser(userId, token);
+    } else if (response.statusCode == 409) {
+      throw "Un utilisateur existe déjà avec cet e-mail ou ce nom d'utilisateur";
+    } else {
+      throw "Erreur d’inscription (${response.statusCode})";
     }
 
-    return res;
+    return response;
   }
 }

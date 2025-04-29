@@ -37,6 +37,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+               Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.35,
+                    vertical: 10),
+                child: TextFormField(
+                  controller: viewModel.usernameController,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  decoration: _fieldDecoration(context, "Nom d'utilisateur"),
+                ),
+              ),
               Padding(
                 padding: EdgeInsets.symmetric(
                     horizontal: MediaQuery.of(context).size.width * 0.35,
