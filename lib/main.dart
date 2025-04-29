@@ -1,5 +1,6 @@
 import 'package:echolinkz/ui/auth/register_page.dart';
 import 'package:echolinkz/ui/auth/register_viewmodel.dart';
+import 'package:echolinkz/ui/reports/create_report_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:echolinkz/models/auth_model.dart';
 import 'package:echolinkz/ui/auth/login_page.dart';
@@ -13,6 +14,7 @@ void main() {
     providers: [
       ChangeNotifierProvider(create: (context) => LoginViewModel()),
       ChangeNotifierProvider(create: (_) => RegisterViewModel()),
+      ChangeNotifierProvider(create: (_) => CreateReportViewModel()),
       ChangeNotifierProvider(create: (context) => AuthModel()),
     ],
     child: const EchoLinkZ(),

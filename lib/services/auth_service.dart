@@ -21,7 +21,7 @@ class AuthService {
       final String userId = data['user']['id'];
 
       await SharedPreferencesManager.loginUser(userId, token);
-    } else if (response.statusCode == 401) {
+    } else if (response.statusCode == 400) {
       throw "Email ou mot de passe incorrect";
     } else {
       throw "Erreur de connexion (${response.statusCode})";

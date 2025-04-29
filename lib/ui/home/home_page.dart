@@ -1,3 +1,4 @@
+import 'package:echolinkz/ui/reports/create_report_page.dart';
 import 'package:flutter/material.dart';
 import 'package:echolinkz/ui/widgets/EchoLinkZ_appbar.dart';
 
@@ -11,7 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-   return Scaffold(
+    return Scaffold(
       appBar: const EchoLinkZAppBar(title: "EchoLinkZ"),
       body: Center(
         child: SizedBox(
@@ -35,6 +36,16 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CreateReportPage(),
+              ));
+        },
+        child: const Icon(Icons.report),
       ),
     );
   }
