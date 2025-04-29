@@ -1,3 +1,5 @@
+import 'package:echolinkz/ui/auth/register_page.dart';
+import 'package:echolinkz/ui/auth/register_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:echolinkz/models/auth_model.dart';
 import 'package:echolinkz/ui/auth/login_page.dart';
@@ -10,6 +12,7 @@ void main() {
  runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => LoginViewModel()),
+      ChangeNotifierProvider(create: (_) => RegisterViewModel()),
       ChangeNotifierProvider(create: (context) => AuthModel()),
     ],
     child: const EchoLinkZ(),
@@ -25,6 +28,7 @@ class EchoLinkZ extends StatelessWidget {
       title: 'EchoLinkZ',
       routes: {
         '/login': (context) => const LoginPage(),
+        '/register': (_) => const RegisterPage(),
         '/home': (context) => const HomePage(),
       },
       navigatorObservers: [AuthObserver()],

@@ -19,12 +19,12 @@ class AuthObserver extends NavigatorObserver {
     if (routeName == null) return;
     bool isUserLogged = await SharedPreferencesManager.isUserLoggedIn();
 
-    if (isUserLogged && routeName == '/login') {
-      navigator!
-          .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
-    } else if (!isUserLogged && routeName != '/login') {
-      navigator!
-          .pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+    if (isUserLogged && (routeName == '/login' || routeName == '/register')) {
+      navigator!.pushNamedAndRemoveUntil('/home', (_) => false);
+    } else if (!isUserLogged &&
+        routeName != '/login' &&
+        routeName != '/register') {
+      navigator!.pushNamedAndRemoveUntil('/login', (_) => false);
     }
   }
 }

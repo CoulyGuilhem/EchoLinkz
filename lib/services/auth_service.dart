@@ -41,4 +41,33 @@ class AuthService {
 
     return response;
   }
+
+  Future<Response> register(String email, String password) async {
+    // TODO: Uncomment this code when api is ready
+    //
+    // final api  = "http://localhost:3000";
+    // final url  = Uri.parse('$api/register');
+    // final res  = await http.post(
+    //   url,
+    //   headers: {'Content-Type': 'application/json'},
+    //   body: jsonEncode({'email': email, 'password': password}),
+    // );
+
+    final res = Response('''{
+    "session_token": "dummy.jwt.token",
+    "user_id": "new_user_id"
+  }''', 201);
+
+    if (res.statusCode == 201) {
+      final data = json.decode(res.body);
+      await SharedPreferencesManager.loginUser(
+        data['user_id'],
+        data['session_token'],
+      );
+    } else if (res.statusCode == 409) {
+      throw "Un utilisateur existe déjà avec cette adresse email";
+    }
+
+    return res;
+  }
 }

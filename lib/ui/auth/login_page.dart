@@ -13,7 +13,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<LoginViewModel>(context);
@@ -44,29 +43,29 @@ class _LoginPageState extends State<LoginPage> {
                     horizontal: MediaQuery.of(context).size.width * 0.35,
                     vertical: 10),
                 child: TextFormField(
-                      controller: viewModel.emailController,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: "Addresse email",
-                        labelStyle: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.secondary,
+                  controller: viewModel.emailController,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Addresse email",
+                    labelStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -108,7 +107,12 @@ class _LoginPageState extends State<LoginPage> {
                     await viewModel.login(context);
                   },
                 ),
-              )
+              ),
+              TextButton(
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/register'),
+                child: const Text("Créer un compte"),
+              ),
             ],
           ),
         ),
