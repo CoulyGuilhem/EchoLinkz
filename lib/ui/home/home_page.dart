@@ -1,7 +1,10 @@
+// lib/ui/home/home_page.dart
+
 import 'package:echolinkz/ui/home/chatbot_dialog.dart';
 import 'package:echolinkz/ui/home/chatbot_viewmodel.dart';
 import 'package:echolinkz/ui/reports/create_report_page.dart';
 import 'package:echolinkz/ui/reports/report_detail_page.dart';
+import 'package:echolinkz/ui/reports/chat_spaces_page.dart';
 import 'package:echolinkz/ui/widgets/EchoLinkZ_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,13 +39,30 @@ class _HomePageState extends State<HomePage> {
     await _reportsFuture;
   }
 
+  void _openChatSpaces() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ChatSpacesPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const EchoLinkZAppBar(title: 'EchoLinkZ'),
+      appBar: EchoLinkZAppBar(
+        title: 'EchoLinkZ',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.forum),
+            color: cs.onPrimary,
+            onPressed: _openChatSpaces,
+            tooltip: 'Espaces de discussion',
+          ),
+        ],
+      ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _reportsFuture,
         builder: (context, snapshot) {
@@ -54,8 +74,8 @@ class _HomePageState extends State<HomePage> {
           }
 
           final reports = snapshot.data!;
-          reports.sort(
-              (a, b) => (b['priority'] as int).compareTo(a['priority'] as int));
+          reports.sort((a, b) =>
+              (b['priority'] as int).compareTo(a['priority'] as int));
           final catCounts = {
             for (var c in _categories)
               c: reports.where((r) => r['category'] == c).length
@@ -100,8 +120,8 @@ class _HomePageState extends State<HomePage> {
                           selected: _selectedCategory == c,
                           selectedColor: cs.primary,
                           backgroundColor: cs.secondary,
-                          onSelected: (sel) => setState(
-                              () => _selectedCategory = sel ? c : null),
+                          onSelected: (sel) =>
+                              setState(() => _selectedCategory = sel ? c : null),
                         )),
                   ],
                 ),
@@ -170,17 +190,14 @@ class _HomePageState extends State<HomePage> {
                                           builder: (_) =>
                                               ReportDetailPage(report: r)),
                                     ),
-
-                                    // bande latérale inchangée
                                     leading: Container(
                                       width: 6,
                                       decoration: BoxDecoration(
                                         color: catColor,
-                                        borderRadius: BorderRadius.circular(4),
+                                        borderRadius:
+                                            BorderRadius.circular(4),
                                       ),
                                     ),
-
-                                    // --- titre avec icône catégorie ---
                                     title: Row(
                                       children: [
                                         Icon(_catIcon(r['category']),
@@ -189,7 +206,8 @@ class _HomePageState extends State<HomePage> {
                                         Expanded(
                                           child: Text(
                                             r['title'] ?? 'Sans titre',
-                                            style: theme.textTheme.titleMedium
+                                            style: theme
+                                                .textTheme.titleMedium
                                                 ?.copyWith(
                                                     fontWeight:
                                                         FontWeight.bold),
@@ -197,7 +215,6 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ],
                                     ),
-
                                     subtitle: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -206,21 +223,20 @@ class _HomePageState extends State<HomePage> {
                                                 ?.isNotEmpty ??
                                             false)
                                           Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 6),
+                                            padding: const EdgeInsets.only(
+                                                top: 6),
                                             child: Text(r['description']!,
                                                 maxLines: 3,
                                                 overflow:
                                                     TextOverflow.ellipsis),
                                           ),
                                         const SizedBox(height: 10),
-
-                                        // --- chips avec icône priorité ---
                                         Row(
                                           children: [
                                             Chip(
                                               avatar: Icon(
-                                                  _catIcon(r['category']),
+                                                  _catIcon(
+                                                      r['category']),
                                                   color: catColor),
                                               label: Text(
                                                 r['category']
@@ -235,10 +251,13 @@ class _HomePageState extends State<HomePage> {
                                             ),
                                             const SizedBox(width: 8),
                                             Chip(
-                                              avatar: const Icon(Icons.flash_on,
+                                              avatar: const Icon(
+                                                  Icons.flash_on,
                                                   size: 18),
-                                              label: Text('${r['priority']}'),
-                                              backgroundColor: cs.surface,
+                                              label: Text(
+                                                  '${r['priority']}'),
+                                              backgroundColor:
+                                                  cs.surface,
                                             ),
                                           ],
                                         ),
@@ -281,8 +300,12 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: cs.primary,
             foregroundColor: cs.onPrimary,
             onPressed: () async {
-              await Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const CreateReportPage()));
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreateReportPage(),
+                ),
+              );
               _refreshReports();
             },
             child: const Icon(Icons.report, size: 28),
@@ -295,31 +318,21 @@ class _HomePageState extends State<HomePage> {
 
   Color _catColor(String cat, ColorScheme cs) {
     switch (cat) {
-      case 'eau':
-        return cs.primary;
-      case 'secours':
-        return cs.error;
-      case 'panne':
-        return cs.tertiary;
-      case 'abri':
-        return cs.secondary;
-      default:
-        return cs.outline;
+      case 'eau': return cs.primary;
+      case 'secours': return cs.error;
+      case 'panne': return cs.tertiary;
+      case 'abri': return cs.secondary;
+      default: return cs.outline;
     }
   }
 
   IconData _catIcon(String cat) {
     switch (cat) {
-      case 'eau':
-        return Icons.water_drop;
-      case 'secours':
-        return Icons.local_hospital;
-      case 'panne':
-        return Icons.car_repair;
-      case 'abri':
-        return Icons.home;
-      default:
-        return Icons.info;
+      case 'eau': return Icons.water_drop;
+      case 'secours': return Icons.local_hospital;
+      case 'panne': return Icons.car_repair;
+      case 'abri': return Icons.home;
+      default: return Icons.info;
     }
   }
 }
