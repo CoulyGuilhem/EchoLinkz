@@ -9,7 +9,6 @@ import '../../services/report_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -39,6 +38,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: const EchoLinkZAppBar(title: 'EchoLinkZ'),
       body: FutureBuilder<List<Map<String, dynamic>>>(
@@ -54,7 +56,6 @@ class _HomePageState extends State<HomePage> {
           final reports = snapshot.data!;
           reports.sort(
               (a, b) => (b['priority'] as int).compareTo(a['priority'] as int));
-
           final catCounts = {
             for (var c in _categories)
               c: reports.where((r) => r['category'] == c).length
@@ -67,13 +68,9 @@ class _HomePageState extends State<HomePage> {
           final filtered = reports.where((r) {
             if (_selectedCategory != null &&
                 _selectedCategory!.isNotEmpty &&
-                r['category'] != _selectedCategory) {
+                r['category'] != _selectedCategory) return false;
+            if (_selectedPriority != null && r['priority'] != _selectedPriority)
               return false;
-            }
-            if (_selectedPriority != null &&
-                r['priority'] != _selectedPriority) {
-              return false;
-            }
             return true;
           }).toList();
 
@@ -86,14 +83,23 @@ class _HomePageState extends State<HomePage> {
                   spacing: 8,
                   children: [
                     ChoiceChip(
-                      label: Text('Toutes (${reports.length})'),
+                      label: Text('Toutes (${reports.length})',
+                          style: TextStyle(color: cs.onSecondary)),
                       selected: _selectedCategory == null,
+                      selectedColor: cs.primary,
+                      backgroundColor: cs.secondary,
                       onSelected: (_) =>
                           setState(() => _selectedCategory = null),
                     ),
                     ..._categories.map((c) => ChoiceChip(
-                          label: Text('${c.toUpperCase()} (${catCounts[c]})'),
+                          label: Text('${c.toUpperCase()} (${catCounts[c]})',
+                              style: TextStyle(
+                                  color: _selectedCategory == c
+                                      ? cs.onPrimary
+                                      : cs.onSecondary)),
                           selected: _selectedCategory == c,
+                          selectedColor: cs.primary,
+                          backgroundColor: cs.secondary,
                           onSelected: (sel) => setState(
                               () => _selectedCategory = sel ? c : null),
                         )),
@@ -106,30 +112,34 @@ class _HomePageState extends State<HomePage> {
                   spacing: 8,
                   children: [
                     ChoiceChip(
-                      label: Text('Toutes'),
+                      label: Text('Toutes',
+                          style: TextStyle(color: cs.onSecondary)),
                       selected: _selectedPriority == null,
+                      selectedColor: cs.primary,
+                      backgroundColor: cs.secondary,
                       onSelected: (_) =>
                           setState(() => _selectedPriority = null),
                     ),
                     ...List.generate(5, (i) => i + 1).map((p) => ChoiceChip(
-                          label: Text('$p (${prioCounts[p]})'),
+                          label: Text('$p (${prioCounts[p]})',
+                              style: TextStyle(
+                                  color: _selectedPriority == p
+                                      ? cs.onPrimary
+                                      : cs.onSecondary)),
                           selected: _selectedPriority == p,
+                          selectedColor: cs.primary,
+                          backgroundColor: cs.secondary,
                           onSelected: (sel) => setState(
                               () => _selectedPriority = sel ? p : null),
                         )),
                   ],
                 ),
               ),
-
               Expanded(
                 child: filtered.isEmpty
                     ? Center(
-                        child: Text(
-                          'Aucun signalement pour ces filtres',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      )
+                        child: Text('Aucun signalement pour ces filtres',
+                            style: theme.textTheme.bodyMedium))
                     : RefreshIndicator(
                         onRefresh: _refreshReports,
                         child: ListView.builder(
@@ -138,74 +148,102 @@ class _HomePageState extends State<HomePage> {
                           itemCount: filtered.length,
                           itemBuilder: (context, i) {
                             final r = filtered[i];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(vertical: 8),
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16)),
-                              child: InkWell(
-                                borderRadius:
-                                    BorderRadius.circular(16),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          ReportDetailPage(report: r),
+                            final catColor = _catColor(r['category'], cs);
+
+                            return Align(
+                              alignment: Alignment.topCenter,
+                              child: ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 600),
+                                child: Card(
+                                  elevation: 3,
+                                  color: cs.surfaceVariant,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: BorderSide(color: cs.outline),
+                                  ),
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.all(16),
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              ReportDetailPage(report: r)),
                                     ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        r['title'] ?? 'Sans titre',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium
-                                            ?.copyWith(
-                                                fontWeight: FontWeight.bold),
+
+                                    // bande latérale inchangée
+                                    leading: Container(
+                                      width: 6,
+                                      decoration: BoxDecoration(
+                                        color: catColor,
+                                        borderRadius: BorderRadius.circular(4),
                                       ),
-                                      const SizedBox(height: 8),
-                                      if ((r['description'] as String?)
-                                              ?.isNotEmpty ??
-                                          false)
-                                        Text(
-                                          r['description']!,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium,
+                                    ),
+
+                                    // --- titre avec icône catégorie ---
+                                    title: Row(
+                                      children: [
+                                        Icon(_catIcon(r['category']),
+                                            color: catColor),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            r['title'] ?? 'Sans titre',
+                                            style: theme.textTheme.titleMedium
+                                                ?.copyWith(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                          ),
                                         ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Chip(
-                                            label: Text(
-                                              r['category']
-                                                      ?.toString()
-                                                      .toUpperCase() ??
-                                                  '',
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
+                                      ],
+                                    ),
+
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if ((r['description'] as String?)
+                                                ?.isNotEmpty ??
+                                            false)
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 6),
+                                            child: Text(r['description']!,
+                                                maxLines: 3,
+                                                overflow:
+                                                    TextOverflow.ellipsis),
+                                          ),
+                                        const SizedBox(height: 10),
+
+                                        // --- chips avec icône priorité ---
+                                        Row(
+                                          children: [
+                                            Chip(
+                                              avatar: Icon(
+                                                  _catIcon(r['category']),
+                                                  color: catColor),
+                                              label: Text(
+                                                r['category']
+                                                    .toString()
+                                                    .toUpperCase(),
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              backgroundColor:
+                                                  catColor.withOpacity(.15),
                                             ),
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .secondary,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Chip(
-                                            avatar: const Icon(
-                                                Icons.priority_high,
-                                                size: 18),
-                                            label:
-                                                Text('${r['priority'] ?? '-'}'),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            const SizedBox(width: 8),
+                                            Chip(
+                                              avatar: const Icon(Icons.flash_on,
+                                                  size: 18),
+                                              label: Text('${r['priority']}'),
+                                              backgroundColor: cs.surface,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -223,6 +261,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           FloatingActionButton.extended(
             heroTag: 'fab_help',
+            backgroundColor: cs.tertiary,
+            foregroundColor: cs.onTertiary,
             onPressed: () {
               showDialog(
                 context: context,
@@ -238,19 +278,48 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(width: 12),
           FloatingActionButton(
             heroTag: 'fab_report',
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
             onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CreateReportPage()),
-              );
+              await Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const CreateReportPage()));
               _refreshReports();
             },
-            tooltip: 'Nouveau signalement',
             child: const Icon(Icons.report, size: 28),
           ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  Color _catColor(String cat, ColorScheme cs) {
+    switch (cat) {
+      case 'eau':
+        return cs.primary;
+      case 'secours':
+        return cs.error;
+      case 'panne':
+        return cs.tertiary;
+      case 'abri':
+        return cs.secondary;
+      default:
+        return cs.outline;
+    }
+  }
+
+  IconData _catIcon(String cat) {
+    switch (cat) {
+      case 'eau':
+        return Icons.water_drop;
+      case 'secours':
+        return Icons.local_hospital;
+      case 'panne':
+        return Icons.car_repair;
+      case 'abri':
+        return Icons.home;
+      default:
+        return Icons.info;
+    }
   }
 }
