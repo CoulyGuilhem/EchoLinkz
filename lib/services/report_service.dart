@@ -9,17 +9,17 @@ class ReportService {
     required String title,
     required String description,
     required String category,
-    required int    priority,
+    required int priority,
     required double lat,
     required double lng,
   }) async {
     final body = {
-      'title'      : title,
+      'title': title,
       'description': description,
-      'category'   : category,
-      'priority'   : priority,
-      'location'   : {
-        'type'       : 'Point',
+      'category': category,
+      'priority': priority,
+      'location': {
+        'type': 'Point',
         'coordinates': [lng, lat],
       },
     };
@@ -41,5 +41,24 @@ class ReportService {
     if (res.statusCode != 201) {
       throw "Erreur (${res.statusCode}) lors de la création du signalement";
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getReports() async {
+    final token = await SharedPreferencesManager.getSessionToken();
+    if (token == null) throw 'Token de session non trouvé';
+
+    final res = await http.get(
+      Uri.parse(_baseUrl),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (res.statusCode != 200) {
+      throw 'Erreur ${res.statusCode} lors de la récupération des signalements';
+    }
+
+    final List<dynamic> jsonList = jsonDecode(res.body);
+    return jsonList.cast<Map<String, dynamic>>();
   }
 }
