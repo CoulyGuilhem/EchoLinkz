@@ -33,6 +33,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     _userId = await SharedPreferencesManager.getUser();
     _openSocket();
     await _loadHistory();
+    _scrollToBottom();
   }
 
   @override
@@ -46,19 +47,16 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   void _openSocket() {
     socket = IO.io(
       _host,
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .disableAutoConnect()
-          .build(),
+      IO.OptionBuilder().setTransports(['websocket']).disableAutoConnect().build(),
     );
     socket.connect();
     socket.onConnect((_) {
       socket.emit('joinRoom', {'reportId': widget.report['_id']});
     });
-    socket.on(
-        'receiveMessage',
-        (d) =>
-            setState(() => messages.insert(0, Map<String, dynamic>.from(d))));
+    socket.on('receiveMessage', (d) {
+      setState(() => messages.insert(0, Map<String, dynamic>.from(d)));
+      _scrollToBottom();
+    });
   }
 
   Future<void> _loadHistory() async {
@@ -69,8 +67,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     );
     if (r.statusCode == 200) {
       final list = (jsonDecode(r.body) as List).reversed;
-      setState(() =>
-          messages.insertAll(0, list.map((e) => Map<String, dynamic>.from(e))));
+      setState(() => messages.insertAll(0, list.map((e) => Map<String, dynamic>.from(e))));
     }
   }
 
@@ -85,6 +82,14 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
       'senderId': _userId,
     });
     setState(() => sending = false);
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scroll.hasClients || !_scroll.position.hasContentDimensions) return;
+      _scroll.jumpTo(_scroll.position.minScrollExtent);
+    });
   }
 
   @override
@@ -120,19 +125,15 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                           Expanded(
                             child: Text(
                               widget.report['title'] ?? 'Sans titre',
-                              style: th.textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
+                              style: th.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
                       ),
-                      if ((widget.report['description'] as String?)
-                              ?.isNotEmpty ??
-                          false)
+                      if ((widget.report['description'] as String?)?.isNotEmpty ?? false)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: Text(widget.report['description']!,
-                              style: th.textTheme.bodyMedium),
+                          child: Text(widget.report['description']!, style: th.textTheme.bodyMedium),
                         ),
                       const SizedBox(height: 10),
                       Wrap(
@@ -140,18 +141,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                         children: [
                           Chip(
                             avatar: Icon(_catIcon(widget.report['category']),
-                                color:
-                                    _catColor(widget.report['category'], cs)),
-                            label: Text(widget.report['category']
-                                .toString()
-                                .toUpperCase()),
-                            backgroundColor:
-                                _catColor(widget.report['category'], cs)
-                                    .withOpacity(.15),
+                                color: _catColor(widget.report['category'], cs)),
+                            label: Text(widget.report['category'].toString().toUpperCase()),
+                            backgroundColor: _catColor(widget.report['category'], cs).withOpacity(.15),
                           ),
                           Chip(
-                            avatar:
-                                Icon(Icons.flash_on, size: 18, color: cs.error),
+                            avatar: Icon(Icons.flash_on, size: 18, color: cs.error),
                             label: Text('${widget.report['priority']}'),
                             backgroundColor: cs.surface,
                           ),
@@ -188,11 +183,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                       final me = m['senderId'] == _userId;
                       final col = me ? cs.primary : cs.secondary;
                       final txt = me ? cs.onPrimary : cs.onSecondary;
-                      return _Bubble(
-                          text: m['message'],
-                          isMe: me,
-                          bubbleCol: col,
-                          textCol: txt);
+                      return _Bubble(text: m['message'], isMe: me, bubbleCol: col, textCol: txt);
                     },
                   ),
                 ),
@@ -200,8 +191,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
               Container(
                 decoration: BoxDecoration(
                   color: cs.surfaceVariant,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
                 child: Row(
@@ -211,14 +201,12 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                         controller: _msg,
                         minLines: 1,
                         maxLines: 1,
-                        textInputAction:
-                            TextInputAction.send,
+                        textInputAction: TextInputAction.send,
                         decoration: InputDecoration(
                           hintText: 'Message…',
                           filled: true,
                           fillColor: cs.surface,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(color: cs.outline),
@@ -229,14 +217,8 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
                     ),
                     const SizedBox(width: 10),
                     sending
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : IconButton(
-                            icon: Icon(Icons.send, color: cs.primary),
-                            onPressed: _send,
-                          ),
+                        ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                        : IconButton(icon: Icon(Icons.send, color: cs.primary), onPressed: _send),
                   ],
                 ),
               ),
@@ -297,7 +279,6 @@ class _Bubble extends StatelessWidget {
       bottomLeft: isMe ? rad : Radius.zero,
       bottomRight: isMe ? Radius.zero : rad,
     );
-
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -306,12 +287,7 @@ class _Bubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: bubbleCol,
           borderRadius: br,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(.06),
-                blurRadius: 4,
-                offset: const Offset(0, 2))
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 4, offset: const Offset(0, 2))],
         ),
         child: Text(text, style: TextStyle(color: textCol)),
       ),
