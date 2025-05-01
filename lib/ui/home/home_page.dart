@@ -1,4 +1,5 @@
 import 'package:echolinkz/ui/reports/create_report_page.dart';
+import 'package:echolinkz/ui/reports/report_detail_page.dart';
 import 'package:echolinkz/ui/widgets/EchoLinkZ_appbar.dart';
 import 'package:flutter/material.dart';
 import '../../services/report_service.dart';
@@ -61,11 +62,13 @@ class _HomePageState extends State<HomePage> {
           };
 
           final filtered = reports.where((r) {
-            if (_selectedCategory != null && _selectedCategory!.isNotEmpty &&
+            if (_selectedCategory != null &&
+                _selectedCategory!.isNotEmpty &&
                 r['category'] != _selectedCategory) {
               return false;
             }
-            if (_selectedPriority != null && r['priority'] != _selectedPriority) {
+            if (_selectedPriority != null &&
+                r['priority'] != _selectedPriority) {
               return false;
             }
             return true;
@@ -74,14 +77,16 @@ class _HomePageState extends State<HomePage> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Wrap(
                   spacing: 8,
                   children: [
                     ChoiceChip(
                       label: Text('Toutes (${reports.length})'),
                       selected: _selectedCategory == null,
-                      onSelected: (_) => setState(() => _selectedCategory = null),
+                      onSelected: (_) =>
+                          setState(() => _selectedCategory = null),
                     ),
                     ..._categories.map((c) => ChoiceChip(
                           label: Text('${c.toUpperCase()} (${catCounts[c]})'),
@@ -100,7 +105,8 @@ class _HomePageState extends State<HomePage> {
                     ChoiceChip(
                       label: Text('Toutes'),
                       selected: _selectedPriority == null,
-                      onSelected: (_) => setState(() => _selectedPriority = null),
+                      onSelected: (_) =>
+                          setState(() => _selectedPriority = null),
                     ),
                     ...List.generate(5, (i) => i + 1).map((p) => ChoiceChip(
                           label: Text('$p (${prioCounts[p]})'),
@@ -111,12 +117,14 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
+
               Expanded(
                 child: filtered.isEmpty
                     ? Center(
                         child: Text(
                           'Aucun signalement pour ces filtres',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium,
                         ),
                       )
                     : RefreshIndicator(
@@ -128,14 +136,21 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, i) {
                             final r = filtered[i];
                             return Card(
-                              margin:
-                                  const EdgeInsets.symmetric(vertical: 8),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
                               elevation: 4,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16)),
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius:
+                                    BorderRadius.circular(16),
                                 onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          ReportDetailPage(report: r),
+                                    ),
+                                  );
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
@@ -206,7 +221,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const CreateReportPage()),
+          MaterialPageRoute(
+              builder: (_) => const CreateReportPage()),
         ).then((_) => _refreshReports()),
         child: const Icon(Icons.report, size: 28),
       ),
