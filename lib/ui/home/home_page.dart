@@ -1,7 +1,10 @@
+import 'package:echolinkz/ui/home/chatbot_dialog.dart';
+import 'package:echolinkz/ui/home/chatbot_viewmodel.dart';
 import 'package:echolinkz/ui/reports/create_report_page.dart';
 import 'package:echolinkz/ui/reports/report_detail_page.dart';
 import 'package:echolinkz/ui/widgets/EchoLinkZ_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/report_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -49,8 +52,8 @@ class _HomePageState extends State<HomePage> {
           }
 
           final reports = snapshot.data!;
-          reports.sort((a, b) =>
-              (b['priority'] as int).compareTo(a['priority'] as int));
+          reports.sort(
+              (a, b) => (b['priority'] as int).compareTo(a['priority'] as int));
 
           final catCounts = {
             for (var c in _categories)
@@ -164,8 +167,7 @@ class _HomePageState extends State<HomePage> {
                                             .textTheme
                                             .headlineMedium
                                             ?.copyWith(
-                                                fontWeight:
-                                                    FontWeight.bold),
+                                                fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 8),
                                       if ((r['description'] as String?)
@@ -187,11 +189,9 @@ class _HomePageState extends State<HomePage> {
                                                       .toUpperCase() ??
                                                   '',
                                               style: const TextStyle(
-                                                  fontWeight:
-                                                      FontWeight.bold),
+                                                  fontWeight: FontWeight.bold),
                                             ),
-                                            backgroundColor: Theme.of(
-                                                    context)
+                                            backgroundColor: Theme.of(context)
                                                 .colorScheme
                                                 .secondary,
                                           ),
@@ -200,8 +200,8 @@ class _HomePageState extends State<HomePage> {
                                             avatar: const Icon(
                                                 Icons.priority_high,
                                                 size: 18),
-                                            label: Text(
-                                                '${r['priority'] ?? '-'}'),
+                                            label:
+                                                Text('${r['priority'] ?? '-'}'),
                                           ),
                                         ],
                                       ),
@@ -218,14 +218,39 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => const CreateReportPage()),
-        ).then((_) => _refreshReports()),
-        child: const Icon(Icons.report, size: 28),
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'fab_help',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (_) => ChangeNotifierProvider.value(
+                  value: context.read<ChatbotViewModel>(),
+                  child: const ChatbotDialog(),
+                ),
+              );
+            },
+            label: const Text('Besoin d’aide ?'),
+            icon: const Icon(Icons.help_outline),
+          ),
+          const SizedBox(width: 12),
+          FloatingActionButton(
+            heroTag: 'fab_report',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CreateReportPage()),
+              );
+              _refreshReports();
+            },
+            tooltip: 'Nouveau signalement',
+            child: const Icon(Icons.report, size: 28),
+          ),
+        ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

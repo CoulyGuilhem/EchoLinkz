@@ -1,5 +1,6 @@
 import 'package:echolinkz/ui/auth/register_page.dart';
 import 'package:echolinkz/ui/auth/register_viewmodel.dart';
+import 'package:echolinkz/ui/home/chatbot_viewmodel.dart';
 import 'package:echolinkz/ui/reports/create_report_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:echolinkz/models/auth_model.dart';
@@ -15,6 +16,7 @@ void main() {
       ChangeNotifierProvider(create: (context) => LoginViewModel()),
       ChangeNotifierProvider(create: (_) => RegisterViewModel()),
       ChangeNotifierProvider(create: (_) => CreateReportViewModel()),
+      ChangeNotifierProvider(create: (_) => ChatbotViewModel()),
       ChangeNotifierProvider(create: (context) => AuthModel()),
     ],
     child: const EchoLinkZ(),
